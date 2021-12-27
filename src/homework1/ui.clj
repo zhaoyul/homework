@@ -78,7 +78,7 @@
                   :children (gen-lines-circles length line-count 10)
                   }}})
 
-(def renderer
+(defn renderer []
   (fx/create-renderer
    :middleware (fx/wrap-map-desc (fn [state]
                                    {:fx/type root-view
@@ -91,5 +91,5 @@
 (defn init-client [color]
   (init-socket)
   (init-color color)
-  (fx/mount-renderer *state renderer)
+  (fx/mount-renderer *state (renderer))
   )
