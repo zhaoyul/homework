@@ -7,15 +7,24 @@
 
 
 (defn -main [& args]
-  (cond (= "-server" (first args))
+  (cond (= "-server" (last args))
         (do (println "I am server")
             (socket/server))
 
-        (= "-black" (first args))
+        (= "-black" (last args))
         (do (println "I am using black....")
             (ui/init-client 2))
 
-        (= "-red" (first args))
+        (= "-red" (last args))
         (ui/init-client 1)
 
         :else (println "get args:" args)))
+
+(defn server []
+  (socket/server))
+
+(defn black-client []
+  (ui/init-client 2))
+
+(defn red-client []
+  (ui/init-client 1))
