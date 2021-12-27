@@ -1,21 +1,30 @@
-(ns homework1.tutorial
-  (:require [cljfx.api :as fx]))
-
-(defmulti event-handler :event/type)
-
-
+(ns homework1.ui
+  (:require [cljfx.api :as fx]
+            [manifold.stream :as s]
+            [homework1.socket :as socket]))
 
 (def length 500)
-
 (def line-count 20)
+
+(def *client (atom nil))
+(def *color (atom 1))
+
+(defn init-color [color]
+  (reset! *color color))
 
 (def *state (atom (into {}
                         (for [x (range line-count)
                               y (range line-count)]
                           [[x y] 0]))))
-
-(defn move [[x y] color]
+(defn move [[[x y] color]]
+  (println "move msg received..." [x y] " color:" color)
   (swap! *state assoc [x y] color))
+
+(defn init-socket []
+  (println "socket is init.....")
+  (let [client (socket/client)]
+    (s/consume move client)
+    (reset! *client client)))
 
 (defn gen-lines-circles [length line-count margin]
   (let [space (- length (* 2 margin))
@@ -46,8 +55,9 @@
               :fill (nth ["white" "red" "black"] (get @*state [idx-x idx-y]))
               :on-mouse-clicked (fn [e]
                                   (prn "x:" x "y:" y " get clicked")
+                                  (s/try-put! @*client [[idx-x idx-y] @*color ] 1000)
                                   (when (zero? (get @*state [idx-x idx-y]))
-                                    (swap! *state assoc [idx-x idx-y] 0)))})
+                                    (swap! *state assoc [idx-x idx-y] @*color)))})
            (for [x lst
                  y lst]
              [x y])
@@ -55,14 +65,6 @@
            (for [x-idx (range line-count)
                  y-idx (range line-count)]
              [x-idx y-idx])))))
-
-
-(defmethod event-handler ::touched [e]
-  (prn e))
-
-(defmethod event-handler :default [e]
-  (prn "unhandled event:" e))
-
 
 (defn root-view [state]
   {:fx/type :stage
@@ -83,4 +85,11 @@
                                     :state state}))
    ))
 
-(fx/mount-renderer *state renderer)
+
+
+
+(defn init-client [color]
+  (init-socket)
+  (init-color color)
+  (fx/mount-renderer *state renderer)
+  )
