@@ -1,19 +1,6 @@
 (ns homework1.tutorial
   (:require [cljfx.api :as fx]))
 
-(Thread/setDefaultUncaughtExceptionHandler
- (reify Thread$UncaughtExceptionHandler
-   (uncaughtException [_ thread ex]
-     (println {:what :uncaught-exception
-               :exception ex
-               :where (str "Uncaught exception on" (.getName thread))}))))
-
-
-;; I want to build an interactive chart that shows how bouncing object falls
-;; on the ground. I want to be able to edit gravity and friction to see how
-;; it affects object's behavior, so I will put it into state:
-
-
 (defmulti event-handler :event/type)
 
 
@@ -28,9 +15,9 @@
                           [[x y] 0]))))
 
 (defn move [[x y] color]
-  (swap! s assoc [x y] color))
+  (swap! *state assoc [x y] color))
 
-(defn gen-lines [length line-count margin]
+(defn gen-lines-circles [length line-count margin]
   (let [space (- length (* 2 margin))
         interval (/ space (dec line-count))
         lst    (mapv (fn [idx] (+ margin (* idx interval)))
@@ -86,7 +73,7 @@
    :showing true
    :scene {:fx/type :scene
            :root {:fx/type :pane
-                  :children (gen-lines length line-count 10)
+                  :children (gen-lines-circles length line-count 10)
                   }}})
 
 (def renderer
